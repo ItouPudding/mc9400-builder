@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>MC9400 料號建構器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  :root {
+    --bg: #f2efe9;
+    --surface: #ffffff;
+    --surface-2: #eae4d9;
+    --surface-2-hover: #e1dbcd;
+    --ink: #1c1a17;
+    --muted: #6f6a60;
+    --line: rgba(28, 26, 23, 0.14);
+    --line-strong: rgba(28, 26, 23, 0.22);
+    --accent: #c8541c;
+    --accent-ink: #fff8f2;
+    --accent-soft: rgba(200, 84, 28, 0.12);
+    --good: #3f7d4a;
+    --good-soft: rgba(63, 125, 74, 0.14);
+    --warn: #ae2f43;
+    --warn-soft: rgba(174, 47, 67, 0.12);
+    --plate-bg: #18140f;
+    --plate-bg-2: #221c14;
+    --plate-ink: #f3ead9;
+    --plate-muted: #b7ab95;
+    --plate-accent: #ff8a3d;
+    --shadow-key: 0 2px 0 var(--line-strong);
+    --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121110;
+      --surface: #1c1a17;
+      --surface-2: #262220;
+      --surface-2-hover: #2e2926;
+      --ink: #f2ede4;
+      --muted: #a89e91;
+      --line: rgba(242, 237, 228, 0.12);
+      --line-strong: rgba(242, 237, 228, 0.2);
+      --accent: #ff8a3d;
+      --accent-ink: #1c1005;
+      --accent-soft: rgba(255, 138, 61, 0.18);
+      --good: #86c68f;
+      --good-soft: rgba(134, 198, 143, 0.16);
+      --warn: #ff7a8a;
+      --warn-soft: rgba(255, 122, 138, 0.16);
+      --shadow-key: 0 2px 0 var(--line-strong);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #121110;
+    --surface: #1c1a17;
+    --surface-2: #262220;
+    --surface-2-hover: #2e2926;
+    --ink: #f2ede4;
+    --muted: #a89e91;
+    --line: rgba(242, 237, 228, 0.12);
+    --line-strong: rgba(242, 237, 228, 0.2);
+    --accent: #ff8a3d;
+    --accent-ink: #1c1005;
+    --accent-soft: rgba(255, 138, 61, 0.18);
+    --good: #86c68f;
+    --good-soft: rgba(134, 198, 143, 0.16);
+    --warn: #ff7a8a;
+    --warn-soft: rgba(255, 122, 138, 0.16);
+    --shadow-key: 0 2px 0 var(--line-strong);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 20px 64px;
+  }
+
+  .hero {
+    max-width: 720px;
+    margin-bottom: 36px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 4.2vw, 40px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 15.5px;
+    line-height: 1.65;
+    color: var(--muted);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .layout {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: 1fr;
+    grid-template-areas: "result" "builder";
+  }
+
+  @media (min-width: 900px) {
+    .layout {
+      grid-template-columns: 1.65fr 1fr;
+      grid-template-areas: "builder result";
+      align-items: start;
+    }
+    .result { position: sticky; top: 24px; }
+  }
+
+  .builder { grid-area: builder; display: flex; flex-direction: column; gap: 20px; }
+  .result { grid-area: result; display: flex; flex-direction: column; gap: 18px; }
+
+  .field-group {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 18px 20px;
+  }
+
+  .field-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .pos-badge {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 5px;
+    padding: 2px 7px;
+    flex: none;
+  }
+
+  .field-head h2 {
+    font-size: 15.5px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  .field-head-en {
+    font-weight: 500;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .field-note {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: -6px 0 12px;
+    line-height: 1.55;
+  }
+
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+    gap: 8px;
+  }
+
+  .keys.wide { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+
+  .key-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+
+  .key {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 62px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    box-shadow: var(--shadow-key);
+    cursor: pointer;
+    user-select: none;
+    transition: background 120ms ease, transform 80ms ease, box-shadow 80ms ease;
+  }
+
+  .key:hover { background: var(--surface-2-hover); }
+
+  .key-input:checked + .key {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: inset 0 1px 0 rgba(0,0,0,0.18);
+    transform: translateY(1px);
+  }
+
+  .key-input:focus-visible + .key {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .key-code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .key-title {
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+
+  .key-input:checked + .key .key-title { color: var(--accent-ink); opacity: 0.86; }
+
+  .model-key .key-code { font-size: 17px; }
+  .model-key .key-title { font-size: 12.5px; }
+
+  .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex: none;
+  }
+
+  .dot-good { background: var(--good); }
+  .dot-warn { background: var(--warn); }
+
+  .key-input:checked + .key .dot { box-shadow: 0 0 0 1px rgba(255,255,255,0.5); }
+
+  .region-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 7px;
+    vertical-align: middle;
+  }
+
+  .region-tag.good { color: var(--good); background: var(--good-soft); }
+  .region-tag.warn { color: var(--warn); background: var(--warn-soft); }
+
+  .plate {
+    background: linear-gradient(160deg, var(--plate-bg-2), var(--plate-bg));
+    border-radius: 14px;
+    padding: 22px 20px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 24px -18px rgba(0,0,0,0.6);
+  }
+
+  .plate-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--plate-muted);
+    margin: 0 0 10px;
+  }
+
+  .plate-code {
+    font-family: var(--font-mono);
+    font-size: clamp(19px, 2.6vw, 25px);
+    font-weight: 500;
+    color: var(--plate-ink);
+    letter-spacing: 0.01em;
+    margin: 0 0 16px;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+
+  .plate-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .plate-btn {
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--plate-ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 7px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 120ms ease;
+  }
+
+  .plate-btn:hover { background: rgba(255, 255, 255, 0.15); }
+  .plate-btn.primary { background: var(--plate-accent); color: #1c1005; border-color: transparent; }
+  .plate-btn.primary:hover { filter: brightness(1.06); }
+  .plate-btn:focus-visible { outline: 2px solid var(--plate-accent); outline-offset: 2px; }
+
+  .decode {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px 6px;
+  }
+
+  .decode-title {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+
+  .decode-list { list-style: none; margin: 0; padding: 0; }
+
+  .decode-row {
+    display: grid;
+    grid-template-columns: 20px 30px 1fr;
+    gap: 10px;
+    align-items: baseline;
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+
+  .decode-row:first-child { border-top: none; }
+
+  .decode-pos { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+  .decode-code { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
+  .decode-detail { color: var(--ink); line-height: 1.5; }
+  .decode-detail span { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
+
+  .disclaimer {
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 2px 2px 0;
+  }
+
+  .footer-note {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease, transform 160ms ease;
+    z-index: 10;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .key, .plate-btn, .toast { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="hero">
+    <p class="eyebrow">Zebra MC9400 / MC9450</p>
+    <h1>料號建構器</h1>
+    <p class="lede">依網路規格、外觀造型、掃描引擎等欄位組合出完整訂購料號,並即時解讀每個位置代表的意義。點選左側各欄位,右側面板會同步更新。</p>
+  </header>
+
+  <div class="layout">
+    <section class="builder" id="builder"></section>
+
+    <aside class="result">
+      <div class="plate">
+        <p class="plate-label">Order Part Number</p>
+        <p class="plate-code" id="plateCode">MC9401-0G1M6GSS-A6</p>
+        <div class="plate-actions">
+          <button class="plate-btn primary" id="copyBtn" type="button">複製料號</button>
+          <button class="plate-btn" id="resetBtn" type="button">還原預設值</button>
+        </div>
+      </div>
+
+      <div class="decode">
+        <p class="decode-title">代碼解讀</p>
+        <ul class="decode-list" id="decodeList"></ul>
+      </div>
+
+      <p class="disclaimer">此對照表依使用者提供的選型參考整理而成,尚未逐條核對 Zebra 官方 Configuration Guide。下單前請以官方文件或代理商報價為準,特別是同一規格出現兩種代碼(如 1/M、G/M、P/R)的欄位。</p>
+    </aside>
+  </div>
+</div>
+
+<p class="footer-note">僅供選型參考,非 Zebra 官方工具。</p>
+
+<div class="toast" id="toast">已複製料號</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var MODEL_GROUP = {
+    key: "model",
+    label: "主機型號",
+    labelEn: "Model",
+    posBadge: "MODEL",
+    wide: true,
+    note: "MC9401：Wi-Fi 6E Only,適用已有全區 Wi-Fi 覆蓋的廠區、倉庫。　MC9450：Wi-Fi 6E + 5G 行動網路,可插 SIM 卡,適用港口、大型戶外貨場等場域。",
+    options: [
+      { code: "MC9401", title: "Wi-Fi 6E Only", detail: "廠區、倉庫等已有全區 Wi-Fi 覆蓋的環境" },
+      { code: "MC9450", title: "Wi-Fi 6E + 5G", detail: "港口、大型戶外貨場,需插 5G SIM 卡的場域" }
+    ]
+  };
+
+  var FIELDS = [
+    {
+      pos: 1, key: "formFactor", label: "外觀外型", labelEn: "Form Factor",
+      options: [
+        { code: "G", title: "Gun / Pistol Grip", detail: "槍柄手持型,含扳機扣板,適合倉庫高頻率掃描作業" },
+        { code: "B", title: "Brick", detail: "直立無槍柄造型" },
+        { code: "T", title: "Turret", detail: "旋轉頭型,掃描頭可旋轉調整角度" }
+      ]
+    },
+    {
+      pos: 2, key: "scanEngine", label: "掃描引擎", labelEn: "Scan Engine",
+      options: [
+        { code: "1", title: "SE58 超遠距離", detail: "SE58 ERI,可達 25 公尺以上,適合高層貨架" },
+        { code: "M", title: "SE58 超遠距離", detail: "同 SE58 ERI,依生產批次使用的備用代碼" },
+        { code: "J", title: "SE4770 標準距離", detail: "一般近距離標籤掃描" },
+        { code: "P", title: "前後雙相機模組", detail: "含前後鏡頭,適合影像擷取需求" },
+        { code: "R", title: "前後雙相機模組", detail: "同前後雙相機模組,依生產批次使用的備用代碼" }
+      ]
+    },
+    {
+      pos: 3, key: "keypad", label: "實體鍵盤", labelEn: "Keypad",
+      options: [
+        { code: "D", title: "53 鍵標準全鍵盤", detail: "標準全配置鍵盤" },
+        { code: "G", title: "53 鍵 5250", detail: "IBM AS/400 綠螢幕終端機模擬鍵盤" },
+        { code: "M", title: "53 鍵 5250", detail: "同 5250 終端機模擬鍵盤,備用代碼" },
+        { code: "E", title: "53 鍵 VT", detail: "VT(Telnet)終端機模擬鍵盤" },
+        { code: "B", title: "34 鍵數字鍵盤", detail: "精簡數字鍵盤" },
+        { code: "C", title: "43 鍵大數字鍵盤", detail: "加大按鍵之數字鍵盤" }
+      ]
+    },
+    {
+      pos: 4, key: "memory", label: "記憶體與儲存", labelEn: "Memory",
+      note: "目前選型參考中僅列出一種記憶體規格。",
+      options: [
+        { code: "6", title: "6GB / 128GB", detail: "6GB RAM / 128GB Flash" }
+      ]
+    },
+    {
+      pos: 5, key: "os", label: "作業系統", labelEn: "OS",
+      note: "目前選型參考中僅列出一種作業系統規格。",
+      options: [
+        { code: "G", title: "Android GMS", detail: "Android,內建 Google Mobile Services" }
+      ]
+    },
+    {
+      pos: 6, key: "environment", label: "環境與防爆等級", labelEn: "Environment",
+      options: [
+        { code: "S", title: "Standard 標準", detail: "常溫工業環境,IP65/IP68" },
+        { code: "C", title: "Cold Storage", detail: "冷凍庫版,加熱防霧螢幕/掃描窗" },
+        { code: "N", title: "Non-Incendive", detail: "Class I, Div 2 無火花防爆版" }
+      ]
+    },
+    {
+      pos: 7, key: "battery", label: "電池", labelEn: "Battery",
+      options: [
+        { code: "S", title: "7000mAh 標準電池", detail: "標準高容量電池" },
+        { code: "B", title: "7000mAh + BLE", detail: "內建藍牙定位尋物功能之電池" }
+      ]
+    }
+  ];
+
+  var COUNTRY_GROUP = {
+    key: "country", label: "國家區域碼", labelEn: "Country Code", pos: 8,
+    wide: true,
+    noteHtml: '<span class="dot dot-good"></span>亞太地區適用(建議報價)　<span class="dot dot-warn"></span>其他洲別專用版(不建議在亞太下單)',
+    options: [
+      { code: "A6", title: "Rest of World / APAC", detail: "台灣、澳洲、紐西蘭、東南亞及大部分亞太國家,主要銷售版本", region: "apac" },
+      { code: "CN", title: "中國大陸", detail: "中國 CCC 認證 + SRRC 無線電核准專用版", region: "apac" },
+      { code: "KR", title: "韓國", detail: "韓國 KC 認證與當地頻段管制專用版", region: "apac" },
+      { code: "JP", title: "日本", detail: "日本 TELEC 認證專用版(部分批次/專案)", region: "apac" },
+      { code: "IN", title: "印度", detail: "印度 BIS 認證專用版(部分批次/專案)", region: "apac" },
+      { code: "NA", title: "North America", detail: "美國/加拿大專用,依 FCC 規範,亞太地區屬非合法射頻設備", region: "other" },
+      { code: "EU", title: "歐洲", detail: "符合 CE / RED 規範之歐洲專用版" , region: "other" },
+      { code: "GB", title: "英國", detail: "英國專用版", region: "other" },
+      { code: "BR", title: "巴西", detail: "巴西專用版", region: "other" },
+      { code: "LA", title: "拉丁美洲", detail: "拉丁美洲專用版", region: "other" }
+    ]
+  };
+
+  var STORAGE_KEY = "mc9400-builder-v1";
+
+  var DEFAULT_STATE = {
+    model: "MC9401", formFactor: "G", scanEngine: "1", keypad: "M",
+    memory: "6", os: "G", environment: "S", battery: "S", country: "A6"
+  };
+
+  var state = Object.assign({}, DEFAULT_STATE);
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var saved = JSON.parse(raw);
+      Object.keys(DEFAULT_STATE).forEach(function (k) {
+        if (saved && typeof saved[k] === "string") state[k] = saved[k];
+      });
+    } catch (e) { /* storage unavailable — keep defaults */ }
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { /* storage unavailable — ignore */ }
+  }
+
+  function renderGroup(container, group, isModel, isCountry) {
+    var wrap = document.createElement("div");
+    wrap.className = "field-group";
+
+    var head = document.createElement("div");
+    head.className = "field-head";
+    var badge = document.createElement("span");
+    badge.className = "pos-badge";
+    badge.textContent = isModel ? "MODEL" : "[" + group.pos + "]";
+    var h2 = document.createElement("h2");
+    h2.innerHTML = group.label + ' <span class="field-head-en">' + group.labelEn + "</span>";
+    head.appendChild(badge);
+    head.appendChild(h2);
+    wrap.appendChild(head);
+
+    if (group.note || group.noteHtml) {
+      var note = document.createElement("p");
+      note.className = "field-note";
+      if (group.noteHtml) { note.innerHTML = group.noteHtml; }
+      else { note.textContent = group.note; }
+      wrap.appendChild(note);
+    }
+
+    var keys = document.createElement("div");
+    keys.className = "keys" + (group.wide ? " wide" : "");
+    keys.setAttribute("role", "radiogroup");
+    keys.setAttribute("aria-label", group.label);
+
+    group.options.forEach(function (opt) {
+      var id = group.key + "-" + opt.code;
+      var input = document.createElement("input");
+      input.type = "radio";
+      input.name = group.key;
+      input.id = id;
+      input.className = "key-input";
+      input.value = opt.code;
+      if (state[group.key] === opt.code) input.checked = true;
+
+      var label = document.createElement("label");
+      label.className = "key" + (isModel ? " model-key" : "");
+      label.setAttribute("for", id);
+
+      var code = document.createElement("span");
+      code.className = "key-code";
+      if (opt.region) {
+        var dot = document.createElement("span");
+        dot.className = "dot " + (opt.region === "apac" ? "dot-good" : "dot-warn");
+        code.appendChild(dot);
+      }
+      code.appendChild(document.createTextNode(opt.code));
+      var title = document.createElement("span");
+      title.className = "key-title";
+      title.textContent = opt.title;
+      label.appendChild(code);
+      label.appendChild(title);
+
+      input.addEventListener("change", function () {
+        state[group.key] = opt.code;
+        saveState();
+        render();
+      });
+
+      keys.appendChild(input);
+      keys.appendChild(label);
+    });
+
+    wrap.appendChild(keys);
+    container.appendChild(wrap);
+  }
+
+  function findOption(group, code) {
+    for (var i = 0; i < group.options.length; i++) {
+      if (group.options[i].code === code) return group.options[i];
+    }
+    return group.options[0];
+  }
+
+  function buildPartNumber() {
+    var mid = "0" + FIELDS.map(function (f) { return state[f.key]; }).join("");
+    return state.model + "-" + mid + "-" + state.country;
+  }
+
+  function renderDecode() {
+    var list = document.getElementById("decodeList");
+    list.innerHTML = "";
+
+    var rows = [];
+    rows.push({ pos: "MODEL", opt: findOption(MODEL_GROUP, state.model) });
+    rows.push({ pos: "—", opt: { code: "0", title: "固定值", detail: "格式中的固定字元" } });
+    FIELDS.forEach(function (f) {
+      rows.push({ pos: "[" + f.pos + "]", opt: findOption(f, state[f.key]) });
+    });
+    rows.push({ pos: "[8]", opt: findOption(COUNTRY_GROUP, state.country) });
+
+    rows.forEach(function (r) {
+      var li = document.createElement("li");
+      li.className = "decode-row";
+      var tag = "";
+      if (r.opt.region === "apac") tag = '<span class="region-tag good">建議報價</span>';
+      else if (r.opt.region === "other") tag = '<span class="region-tag warn">不建議下單</span>';
+      li.innerHTML =
+        '<span class="decode-pos">' + r.pos + '</span>' +
+        '<span class="decode-code">' + r.opt.code + '</span>' +
+        '<span class="decode-detail">' + r.opt.title + tag + '<span>' + r.opt.detail + '</span></span>';
+      list.appendChild(li);
+    });
+  }
+
+  function render() {
+    document.getElementById("plateCode").textContent = buildPartNumber();
+    renderDecode();
+  }
+
+  function buildBuilder() {
+    var container = document.getElementById("builder");
+    container.innerHTML = "";
+    renderGroup(container, MODEL_GROUP, true, false);
+    FIELDS.forEach(function (f) { renderGroup(container, f, false, false); });
+    renderGroup(container, COUNTRY_GROUP, false, true);
+  }
+
+  function showToast(msg) {
+    var toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove("show"); }, 1600);
+  }
+
+  function copyPartNumber() {
+    var text = buildPartNumber();
+    function done(ok) { showToast(ok ? "已複製料號" : "複製失敗,請手動選取文字"); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else {
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        done(true);
+      } catch (e) { done(false); }
+    }
+  }
+
+  function init() {
+    loadState();
+    buildBuilder();
+    render();
+    document.getElementById("copyBtn").addEventListener("click", copyPartNumber);
+    document.getElementById("resetBtn").addEventListener("click", function () {
+      state = Object.assign({}, DEFAULT_STATE);
+      saveState();
+      buildBuilder();
+      render();
+      showToast("已還原預設值");
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
