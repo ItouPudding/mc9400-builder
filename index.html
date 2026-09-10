@@ -190,11 +190,11 @@
 
   .keys {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
     gap: 8px;
   }
 
-  .keys.wide { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .keys.wide { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); }
 
   .key-input {
     position: absolute;
@@ -210,7 +210,7 @@
     gap: 4px;
     align-items: flex-start;
     justify-content: center;
-    min-height: 62px;
+    min-height: 70px;
     padding: 9px 11px;
     border-radius: 8px;
     background: var(--surface-2);
@@ -248,6 +248,21 @@
   }
 
   .key-input:checked + .key .key-title { color: var(--accent-ink); opacity: 0.86; }
+
+  .key-title-en {
+    font-size: 10px;
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  .key-input:checked + .key .key-title-en { color: var(--accent-ink); opacity: 0.7; }
+
+  .decode-en {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 12px;
+    margin-left: 3px;
+  }
 
   .model-key .key-code { font-size: 17px; }
   .model-key .key-title { font-size: 12.5px; }
@@ -453,8 +468,8 @@
     wide: true,
     note: "MC9401：Wi-Fi 6E Only,適用已有全區 Wi-Fi 覆蓋的廠區、倉庫。　MC9450：Wi-Fi 6E + 5G 行動網路,可插 SIM 卡,適用港口、大型戶外貨場等場域。",
     options: [
-      { code: "MC9401", title: "Wi-Fi 6E Only", detail: "廠區、倉庫等已有全區 Wi-Fi 覆蓋的環境" },
-      { code: "MC9450", title: "Wi-Fi 6E + 5G", detail: "港口、大型戶外貨場,需插 5G SIM 卡的場域" }
+      { code: "MC9401", title: "僅 Wi-Fi 6E", titleEn: "Wi-Fi 6E Only", detail: "廠區、倉庫等已有全區 Wi-Fi 覆蓋的環境" },
+      { code: "MC9450", title: "Wi-Fi 6E + 5G", titleEn: "含 5G SIM 卡槽", detail: "港口、大型戶外貨場,需插 5G SIM 卡的場域" }
     ]
   };
 
@@ -462,19 +477,19 @@
     {
       pos: 1, key: "formFactor", label: "外觀外型", labelEn: "Form Factor",
       options: [
-        { code: "G", title: "Gun / Pistol Grip", detail: "槍柄手持型,含扳機扣板,適合倉庫高頻率掃描作業" },
-        { code: "B", title: "Brick", detail: "直立無槍柄造型" },
-        { code: "T", title: "Turret", detail: "旋轉頭型,掃描頭可旋轉調整角度" }
+        { code: "G", title: "槍柄手持型", titleEn: "Gun / Pistol Grip", detail: "槍柄手持型,含扳機扣板,適合倉庫高頻率掃描作業" },
+        { code: "B", title: "直立無槍柄", titleEn: "Brick", detail: "直立無槍柄造型" },
+        { code: "T", title: "旋轉頭型", titleEn: "Turret", detail: "旋轉頭型,掃描頭可旋轉調整角度" }
       ]
     },
     {
       pos: 2, key: "scanEngine", label: "掃描引擎", labelEn: "Scan Engine",
       options: [
-        { code: "1", title: "SE58 超遠距離", detail: "SE58 ERI,可達 25 公尺以上,適合高層貨架" },
-        { code: "M", title: "SE58 超遠距離", detail: "同 SE58 ERI,依生產批次使用的備用代碼" },
-        { code: "J", title: "SE4770 標準距離", detail: "一般近距離標籤掃描" },
-        { code: "P", title: "前後雙相機模組", detail: "含前後鏡頭,適合影像擷取需求" },
-        { code: "R", title: "前後雙相機模組", detail: "同前後雙相機模組,依生產批次使用的備用代碼" }
+        { code: "1", title: "超遠距離掃描", titleEn: "SE58 ERI", detail: "SE58 ERI,可達 25 公尺以上,適合高層貨架" },
+        { code: "M", title: "超遠距離掃描(備用碼)", titleEn: "SE58 ERI", detail: "同 SE58 ERI,依生產批次使用的備用代碼" },
+        { code: "J", title: "標準距離掃描", titleEn: "SE4770", detail: "一般近距離標籤掃描" },
+        { code: "P", title: "前後雙相機模組", titleEn: "", detail: "含前後鏡頭,適合影像擷取需求" },
+        { code: "R", title: "前後雙相機模組(備用碼)", titleEn: "", detail: "同前後雙相機模組,依生產批次使用的備用代碼" }
       ]
     },
     {
@@ -505,16 +520,16 @@
     {
       pos: 6, key: "environment", label: "環境與防爆等級", labelEn: "Environment",
       options: [
-        { code: "S", title: "Standard 標準", detail: "常溫工業環境,IP65/IP68" },
-        { code: "C", title: "Cold Storage", detail: "冷凍庫版,加熱防霧螢幕/掃描窗" },
-        { code: "N", title: "Non-Incendive", detail: "Class I, Div 2 無火花防爆版" }
+        { code: "S", title: "標準環境", titleEn: "Standard", detail: "常溫工業環境,IP65/IP68" },
+        { code: "C", title: "冷凍庫版", titleEn: "Cold Storage", detail: "冷凍庫版,加熱防霧螢幕/掃描窗" },
+        { code: "N", title: "防爆版", titleEn: "Non-Incendive", detail: "Class I, Div 2 無火花防爆版" }
       ]
     },
     {
       pos: 7, key: "battery", label: "電池", labelEn: "Battery",
       options: [
-        { code: "S", title: "7000mAh 標準電池", detail: "標準高容量電池" },
-        { code: "B", title: "7000mAh + BLE", detail: "內建藍牙定位尋物功能之電池" }
+        { code: "S", title: "標準電池", titleEn: "7000mAh", detail: "標準高容量電池" },
+        { code: "B", title: "尋物電池", titleEn: "7000mAh + BLE", detail: "內建藍牙定位尋物功能之電池" }
       ]
     }
   ];
@@ -524,16 +539,16 @@
     wide: true,
     noteHtml: '<span class="dot dot-good"></span>亞太地區適用(建議報價)　<span class="dot dot-warn"></span>其他洲別專用版(不建議在亞太下單)',
     options: [
-      { code: "A6", title: "Rest of World / APAC", detail: "台灣、澳洲、紐西蘭、東南亞及大部分亞太國家,主要銷售版本", region: "apac" },
-      { code: "CN", title: "中國大陸", detail: "中國 CCC 認證 + SRRC 無線電核准專用版", region: "apac" },
-      { code: "KR", title: "韓國", detail: "韓國 KC 認證與當地頻段管制專用版", region: "apac" },
-      { code: "JP", title: "日本", detail: "日本 TELEC 認證專用版(部分批次/專案)", region: "apac" },
-      { code: "IN", title: "印度", detail: "印度 BIS 認證專用版(部分批次/專案)", region: "apac" },
-      { code: "NA", title: "North America", detail: "美國/加拿大專用,依 FCC 規範,亞太地區屬非合法射頻設備", region: "other" },
-      { code: "EU", title: "歐洲", detail: "符合 CE / RED 規範之歐洲專用版" , region: "other" },
-      { code: "GB", title: "英國", detail: "英國專用版", region: "other" },
-      { code: "BR", title: "巴西", detail: "巴西專用版", region: "other" },
-      { code: "LA", title: "拉丁美洲", detail: "拉丁美洲專用版", region: "other" }
+      { code: "A6", title: "亞太通用版", titleEn: "Rest of World / APAC", detail: "台灣、澳洲、紐西蘭、東南亞及大部分亞太國家,主要銷售版本", region: "apac" },
+      { code: "CN", title: "中國大陸", titleEn: "", detail: "中國 CCC 認證 + SRRC 無線電核准專用版", region: "apac" },
+      { code: "KR", title: "韓國", titleEn: "", detail: "韓國 KC 認證與當地頻段管制專用版", region: "apac" },
+      { code: "JP", title: "日本", titleEn: "", detail: "日本 TELEC 認證專用版(部分批次/專案)", region: "apac" },
+      { code: "IN", title: "印度", titleEn: "", detail: "印度 BIS 認證專用版(部分批次/專案)", region: "apac" },
+      { code: "NA", title: "北美專用版", titleEn: "North America", detail: "美國/加拿大專用,依 FCC 規範,亞太地區屬非合法射頻設備", region: "other" },
+      { code: "EU", title: "歐洲專用版", titleEn: "Europe", detail: "符合 CE / RED 規範之歐洲專用版" , region: "other" },
+      { code: "GB", title: "英國", titleEn: "", detail: "英國專用版", region: "other" },
+      { code: "BR", title: "巴西", titleEn: "", detail: "巴西專用版", region: "other" },
+      { code: "LA", title: "拉丁美洲", titleEn: "", detail: "拉丁美洲專用版", region: "other" }
     ]
   };
 
@@ -617,6 +632,12 @@
       title.textContent = opt.title;
       label.appendChild(code);
       label.appendChild(title);
+      if (opt.titleEn) {
+        var titleEn = document.createElement("span");
+        titleEn.className = "key-title-en";
+        titleEn.textContent = opt.titleEn;
+        label.appendChild(titleEn);
+      }
 
       input.addEventListener("change", function () {
         state[group.key] = opt.code;
@@ -662,10 +683,11 @@
       var tag = "";
       if (r.opt.region === "apac") tag = '<span class="region-tag good">建議報價</span>';
       else if (r.opt.region === "other") tag = '<span class="region-tag warn">不建議下單</span>';
+      var en = r.opt.titleEn ? ' <span class="decode-en">' + r.opt.titleEn + '</span>' : '';
       li.innerHTML =
         '<span class="decode-pos">' + r.pos + '</span>' +
         '<span class="decode-code">' + r.opt.code + '</span>' +
-        '<span class="decode-detail">' + r.opt.title + tag + '<span>' + r.opt.detail + '</span></span>';
+        '<span class="decode-detail">' + r.opt.title + en + tag + '<span>' + r.opt.detail + '</span></span>';
       list.appendChild(li);
     });
   }
